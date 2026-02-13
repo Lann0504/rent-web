@@ -10,6 +10,7 @@
   "dependencies": {
     "@hono/node-server": "^1.13.0",
     "hono": "^4.6.0",
+    "postgres": "^3.4.8",
     "sql.js": "^1.14.0",
     "zod": "^3.24.0"
   },

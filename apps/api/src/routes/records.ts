@@ -48,16 +48,19 @@ records.get("/", async (c) => {
   const sql = `
     SELECT
       r.id,
-      r.tenant_id as tenantId,
+      r.tenant_id as "tenantId",
       t.room as room,
       t.name as name,
+      t.rent::float8 as rent,
+      t.electricity_rate::float8 as "electricityRate",
+      t.water_rate::float8 as "waterRate",
       r.year, r.month,
       r.electricity, r.water,
-      r.electricity_fee as electricityFee,
-      r.water_fee as waterFee,
-      r.total,
-      r.created_at as createdAt,
-      r.updated_at as updatedAt
+      r.electricity_fee::float8 as "electricityFee",
+      r.water_fee::float8 as "waterFee",
+      r.total::float8 as total,
+      r.created_at as "createdAt",
+      r.updated_at as "updatedAt"
     FROM records r
     JOIN tenants t ON t.id = r.tenant_id
     ${where.length ? "WHERE " + where.join(" AND ") : ""}
@@ -76,12 +79,12 @@ records.get("/recent", async (c) => {
     `
       SELECT
         r.id,
-        r.tenant_id as tenantId,
+        r.tenant_id as "tenantId",
         t.room as room,
         t.name as name,
         r.year, r.month,
-        r.total,
-        r.updated_at as updatedAt
+        r.total::float8 as total,
+        r.updated_at as "updatedAt"
       FROM records r
       JOIN tenants t ON t.id = r.tenant_id
       ORDER BY r.updated_at DESC
@@ -113,13 +116,13 @@ records.get("/previous", async (c) => {
     `
       SELECT
         r.id,
-        r.tenant_id as tenantId,
+        r.tenant_id as "tenantId",
         r.year, r.month,
         r.electricity, r.water,
-        r.electricity_fee as electricityFee,
-        r.water_fee as waterFee,
-        r.total,
-        r.updated_at as updatedAt
+        r.electricity_fee::float8 as "electricityFee",
+        r.water_fee::float8 as "waterFee",
+        r.total::float8 as total,
+        r.updated_at as "updatedAt"
       FROM records r
       WHERE r.tenant_id=? AND r.year=? AND r.month=?
     `,
@@ -131,21 +134,21 @@ records.get("/previous", async (c) => {
 
 records.put("/", async (c) => {
   const body = UpsertRecordSchema.parse(await c.req.json())
-  const now = new Date().toISOString()
 
+  // ✅ 让 DB 自己写 now()，不依赖客户端时间
   await run(
     `
     INSERT INTO records
       (tenant_id, year, month, electricity, water, electricity_fee, water_fee, total, created_at, updated_at)
     VALUES
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (?, ?, ?, ?, ?, ?, ?, ?, now(), now())
     ON CONFLICT(tenant_id, year, month) DO UPDATE SET
       electricity=excluded.electricity,
       water=excluded.water,
       electricity_fee=excluded.electricity_fee,
       water_fee=excluded.water_fee,
       total=excluded.total,
-      updated_at=excluded.updated_at
+      updated_at=now()
     `,
     [
       body.tenantId,
@@ -156,8 +159,6 @@ records.put("/", async (c) => {
       body.electricityFee,
       body.waterFee,
       body.total,
-      now,
-      now,
     ]
   )
 

@@ -9,7 +9,7 @@ const TenantCreateSchema = z.object({
   name: z.string().default(""),
   electricityRate: z.number().nonnegative(),
   waterRate: z.number().nonnegative(),
-  rent: z.number().int().nonnegative(),
+  rent: z.number().nonnegative(),
 })
 
 const TenantPatchSchema = z.object({
@@ -17,19 +17,20 @@ const TenantPatchSchema = z.object({
   name: z.string().optional(),
   electricityRate: z.number().nonnegative().optional(),
   waterRate: z.number().nonnegative().optional(),
-  rent: z.number().int().nonnegative().optional(),
+  rent: z.number().nonnegative().optional(),
 })
 
 tenants.get("/", async (c) => {
+  // ✅ Postgres numeric -> float8，前端拿到就是 number
   const rows = await all(
     `SELECT
        id,
        room,
        name,
-       electricity_rate as electricityRate,
-       water_rate as waterRate,
-       rent,
-       created_at as createdAt
+       electricity_rate::float8 as "electricityRate",
+       water_rate::float8 as "waterRate",
+       rent::float8 as rent,
+       created_at as "createdAt"
      FROM tenants
      ORDER BY CAST(room as INTEGER) ASC, room ASC`
   )
@@ -46,12 +47,7 @@ tenants.post("/", async (c) => {
     [body.room, body.name ?? "", body.electricityRate, body.waterRate, body.rent, now]
   )
 
-  // sql.js 没有 lastInsertRowid 的便捷返回：用查询拿一下
-  const row = await get<{ id: number }>(
-    `SELECT id FROM tenants WHERE room=?`,
-    [body.room]
-  )
-
+  const row = await get<{ id: number }>(`SELECT id FROM tenants WHERE room=?`, [body.room])
   return c.json({ id: row?.id ?? null })
 })
 
@@ -62,7 +58,10 @@ tenants.patch("/:id", async (c) => {
   const patch = TenantPatchSchema.parse(await c.req.json())
 
   const cur = await get<any>(
-    `SELECT id, room, name, electricity_rate as electricityRate, water_rate as waterRate, rent
+    `SELECT id, room, name,
+            electricity_rate::float8 as "electricityRate",
+            water_rate::float8 as "waterRate",
+            rent::float8 as rent
      FROM tenants WHERE id=?`,
     [id]
   )
@@ -90,10 +89,7 @@ tenants.delete("/:id", async (c) => {
   const id = Number(c.req.param("id"))
   if (!Number.isFinite(id)) return c.json({ message: "Invalid id" }, 400)
 
-  const before = await get<{ c: number }>(
-    `SELECT COUNT(1) as c FROM tenants WHERE id=?`,
-    [id]
-  )
+  const before = await get<{ c: number }>(`SELECT COUNT(1) as c FROM tenants WHERE id=?`, [id])
   if ((before?.c ?? 0) === 0) return c.json({ message: "Tenant not found" }, 404)
 
   await run(`DELETE FROM tenants WHERE id=?`, [id])

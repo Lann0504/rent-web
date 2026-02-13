@@ -6,7 +6,6 @@ export async function seedTenantsIfEmpty() {
 
   const now = new Date().toISOString()
 
-  // ✅ 你已经换好的真实数据：把你那份粘贴到这里
   const seeds: Array<{
     room: string
     name: string
@@ -14,17 +13,17 @@ export async function seedTenantsIfEmpty() {
     water_rate: number
     rent: number
   }> = [
-     {  room: '102',name: '102', electricity_rate: 1, water_rate: 4.5, rent: 800 },
-    {  room: '201',name: '102', electricity_rate: 1, water_rate: 4.5, rent: 620 },
-    {  room: '202',name: '202', electricity_rate: 1, water_rate: 4.5, rent: 520 },
-    {  room: '203',name: '203', electricity_rate: 1, water_rate: 4.5, rent: 520 },
-    {  room: '204',name: '204', electricity_rate: 1, water_rate: 4.5, rent: 620 },
-    {  room: '301',name: '301', electricity_rate: 1, water_rate: 4.5, rent: 620 },
-    {  room: '302',name: '302', electricity_rate: 1, water_rate: 4.5, rent: 520 },
-    {  room: '303',name: '303', electricity_rate: 1, water_rate: 4.5, rent: 520 },
-    {  room: '304',name: '304', electricity_rate: 1, water_rate: 4.5, rent: 620 },
-    {  room: '401',name: '401', electricity_rate: 1, water_rate: 4.5, rent: 620 },
-    {  room: '402',name: '402', electricity_rate: 1, water_rate: 4.5, rent: 520 },
+    { room: "102", name: "102", electricity_rate: 1, water_rate: 4.5, rent: 800 },
+    { room: "201", name: "201", electricity_rate: 1, water_rate: 4.5, rent: 620 },
+    { room: "202", name: "202", electricity_rate: 1, water_rate: 4.5, rent: 520 },
+    { room: "203", name: "203", electricity_rate: 1, water_rate: 4.5, rent: 520 },
+    { room: "204", name: "204", electricity_rate: 1, water_rate: 4.5, rent: 620 },
+    { room: "301", name: "301", electricity_rate: 1, water_rate: 4.5, rent: 620 },
+    { room: "302", name: "302", electricity_rate: 1, water_rate: 4.5, rent: 520 },
+    { room: "303", name: "303", electricity_rate: 1, water_rate: 4.5, rent: 520 },
+    { room: "304", name: "304", electricity_rate: 1, water_rate: 4.5, rent: 620 },
+    { room: "401", name: "401", electricity_rate: 1, water_rate: 4.5, rent: 620 },
+    { room: "402", name: "402", electricity_rate: 1, water_rate: 4.5, rent: 520 },
   ]
 
   for (const t of seeds) {

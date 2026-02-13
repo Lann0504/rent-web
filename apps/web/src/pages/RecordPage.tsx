@@ -77,12 +77,12 @@ export default function RecordPage() {
 
   const electricityAmount = useMemo(() => {
     if (!tenant) return 0
-    return (electricityUsage + 1) * tenant.electricityRate
+    return (electricityUsage + 1) * Number(tenant.electricityRate ?? 0)
   }, [tenant, electricityUsage])
 
   const waterAmount = useMemo(() => {
     if (!tenant) return 0
-    return (waterUsage + 1) * tenant.waterRate
+    return (waterUsage + 1) * Number(tenant.waterRate ?? 0)
   }, [tenant, waterUsage])
 
   const electricityFee = useMemo(() => electricityAmount - 1, [electricityAmount])
@@ -90,7 +90,7 @@ export default function RecordPage() {
 
   const total = useMemo(() => {
     if (!tenant) return 0
-    return tenant.rent + electricityAmount + waterAmount
+    return Number(tenant.rent ?? 0) + electricityAmount + waterAmount
   }, [tenant, electricityAmount, waterAmount])
 
   useEffect(() => {
@@ -107,34 +107,34 @@ export default function RecordPage() {
     if (!tenantId) return
     setLoading(true)
 
-    ;(async () => {
-      try {
-        const prev = await api<any>(
-          `/api/records/previous?tenantId=${tenantId}&year=${year}&month=${month}`
-        )
-        const pe = Number(prev?.electricity ?? 0)
-        const pw = Number(prev?.water ?? 0)
-        setPrevElectricity(pe)
-        setPrevWater(pw)
+      ; (async () => {
+        try {
+          const prev = await api<any>(
+            `/api/records/previous?tenantId=${tenantId}&year=${year}&month=${month}`
+          )
+          const pe = Number(prev?.electricity ?? 0)
+          const pw = Number(prev?.water ?? 0)
+          setPrevElectricity(pe)
+          setPrevWater(pw)
 
-        const rows = await api<any[]>(
-          `/api/records?tenantId=${tenantId}&year=${year}&month=${month}`
-        )
-        const curOne = rows?.[0] ?? null
+          const rows = await api<any[]>(
+            `/api/records?tenantId=${tenantId}&year=${year}&month=${month}`
+          )
+          const curOne = rows?.[0] ?? null
 
-        if (curOne) {
-          setElectricity(Number(curOne.electricity ?? 0))
-          setWater(Number(curOne.water ?? 0))
-        } else {
-          setElectricity(pe)
-          setWater(pw)
+          if (curOne) {
+            setElectricity(Number(curOne.electricity ?? 0))
+            setWater(Number(curOne.water ?? 0))
+          } else {
+            setElectricity(pe)
+            setWater(pw)
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? String(e))
+        } finally {
+          setLoading(false)
         }
-      } catch (e: any) {
-        toast.error(e?.message ?? String(e))
-      } finally {
-        setLoading(false)
-      }
-    })()
+      })()
   }, [tenantId, year, month])
 
   async function onSave() {
@@ -279,7 +279,7 @@ export default function RecordPage() {
             <CardContent className="pt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">房租：{tenant?.rent ?? 0}</div>
-                <div className="text-lg font-semibold">合计：{total.toFixed(2)}</div>
+                <div className="text-lg font-semibold">合计：{Number(total).toFixed(2)}</div>
               </div>
               <Button onClick={onSave} disabled={saving || !tenantId}>
                 {saving ? "保存中..." : "保存"}
